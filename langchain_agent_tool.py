@@ -45,7 +45,7 @@ prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-def test():
+def agent_test():
     # output = chain.invoke("What is the current exchange rate for USD vs EUR ?")
     # output = get_exchange_rate_from_api({'currency_from': 'USD', 'currency_to': 'EUR'})
     agent = create_tool_calling_agent(model, langchain_tools, prompt)
@@ -58,6 +58,6 @@ def test():
 if __name__ == '__main__':
     start_time = time.time()
     print('waiting...\n')
-    test()
+    agent_test()
     end_time = time.time()
     print('Time Used: ' + str((end_time - start_time)/60) + 'min')
