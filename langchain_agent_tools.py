@@ -6,11 +6,13 @@ from langchain_core.tools import tool
 from langchain.agents import create_tool_calling_agent, AgentExecutor
 from langchain_core.chat_history import InMemoryChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_community.utilities import GoogleSerperAPIWrapper
 import time
 import api_key as api
 import requests
 
 api_key = api.ai302_api_key()
+google_serper_key = api.google_serper_key()
 base_url= 'https://api.302.ai/v1'
 model_name='gemini-2.0-flash-exp'
 
@@ -28,8 +30,20 @@ def get_exchange_rate_from_api(currency_from: str, currency_to: str) -> str:
     # 返回更友好的格式
     return f"1 {currency_from} = {data['rates'][currency_to]} {currency_to}"
 
+# Create our new search tool here
+search = GoogleSerperAPIWrapper(serper_api_key=google_serper_key)
+@tool
+def google_search(query: str):
+    """
+    Perform a search on Google
+    Args:
+        query: the information to be retrieved with google search
+    """
+    return search.run(query)
+
 langchain_tools = [
-    get_exchange_rate_from_api
+    get_exchange_rate_from_api,
+    google_search
 ]
 
 model = ChatOpenAI(
@@ -39,7 +53,7 @@ model = ChatOpenAI(
 )
 
 # Different types of memory can be found in Langchain
-memory = InMemoryChatMessageHistory(session_id="foo")
+memory = InMemoryChatMessageHistory()
 prompt = ChatPromptTemplate.from_messages(
     [
         ("system", "You are a helpful assistant."),
@@ -68,7 +82,7 @@ def agent_test():
         config
     )
     output = agent_with_chat_history.invoke(
-        {"input": "Project id is bigquery-public-data"},
+        {"input": "What was the result of Rafael Nadal's latest game ?"},
         config
     )
     print(output)
